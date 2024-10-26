@@ -1,0 +1,20 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "endergolf:block/scorecard_holder"
+  },
+  "elements": [
+    {
+      "from": [ 0, 0, 0 ],
+      "to": [ 16, 16, 16 ],
+      "faces": {
+        "up":    { "uv": [0,0, 16, 5.35], "texture": "#all", "cullface": "up" },
+        "down":  { "uv": [0,5.35, 16,10.66], "texture": "#all", "cullface": "down" },
+        "north": { "uv": [0,10.67, 16,16], "texture": "#all", "cullface": "north" },
+        "south": { "uv": [0,10.67, 16,16], "texture": "#all", "cullface": "south" },
+        "west":  { "uv": [0,10.67, 16,16], "texture": "#all", "cullface": "west" },
+        "east":  { "uv": [0,10.67, 16,16], "texture": "#all", "cullface": "east" }
+      }
+    }
+  ]
+}
