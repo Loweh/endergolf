@@ -20,5 +20,6 @@ public class EnderGolfClient implements ClientModInitializer {
 		System.out.println("Creating screen from scorecard.");
 		ScorecardScreen scoreScr = new ScorecardScreen();
 		MinecraftClient.getInstance().setScreen(scoreScr);
+		System.out.println(MinecraftClient.getInstance().player.getUuidAsString());
 	}
 }
