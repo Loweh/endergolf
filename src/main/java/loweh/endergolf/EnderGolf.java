@@ -2,13 +2,16 @@ package loweh.endergolf;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import loweh.endergolf.database.Score;
 import loweh.endergolf.database.ScoreAdmin;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -25,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
 import static net.minecraft.server.command.CommandManager.*;
 
 /**
@@ -63,6 +67,35 @@ public class EnderGolf implements ModInitializer {
 			cmdAdminList(context);
 			return 1;
 		}))));
+
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(literal("endergolf").then(literal("front-9").then(CommandManager.argument("cmd", StringArgumentType.string()).executes(context -> {
+			String arg1 = StringArgumentType.getString(context, "cmd");
+
+			switch (arg1) {
+				case "server-latest":
+					cmdBestFront9Scores(context);
+					break;
+				default:
+					return 0;
+			}
+
+			return 1;
+		})))));
+
+		ArrayList<Score> scores = Score.allScores(null, null);
+
+		if (scores != null) {
+			for (Score scr : scores) {
+				System.out.print("Score found: name=" + nameFromUUID(scr.getUUID()) + ", ");
+				System.out.print("isFront=" + scr.getIsFront() + ", ");
+				int i = 0;
+				for (int score : scr.getScores()) {
+					i++;
+					System.out.print("Hole " + i + ": " + score + ", ");
+				}
+				System.out.print("dateTime=" + scr.getDateTime().toString() + "\n");
+			}
+		}
 	}
 
 	private String nameFromUUID(String uuid) {
@@ -107,6 +140,32 @@ public class EnderGolf implements ModInitializer {
 			}
 
 			Text msg = Text.literal(admin.id + "    " + name + "    " + admin.dtGranted.toString());
+			ctx.getSource().sendFeedback(() -> msg, false);
+		}
+	}
+
+	private void cmdBestFront9Scores(CommandContext<ServerCommandSource> ctx) {
+		ArrayList<Score> scores = Score.allScores("WHERE score.id IN (SELECT score_id FROM score_verified WHERE 1=1) AND hole_9_score.is_front = 1 AND (SELECT COUNT(*) FROM hole_9_score WHERE score_id = score.id) = 1 ORDER BY score.date_time LIMIT 10", null);
+
+		if (scores == null) {
+			ctx.getSource().sendFeedback(() -> Text.literal("ERROR: Could not retrieve score information from database.").withColor(CMD_ERR_COLOR), false);
+			return;
+		}
+
+		ctx.getSource().sendFeedback(() -> Text.literal("Name    Total    Date"), false);
+		ctx.getSource().sendFeedback(() -> Text.literal("__________________________"), false);
+		for (Score score : scores) {
+			String name = nameFromUUID(score.getUUID());
+			int sum = 0;
+			for (int holeScore : score.getScores()) {
+				sum += holeScore;
+			}
+
+			if (name == null) {
+				continue;
+			}
+
+			Text msg = Text.literal(name + "    " + sum + "    " + score.getDateTime().toString());
 			ctx.getSource().sendFeedback(() -> msg, false);
 		}
 	}

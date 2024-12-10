@@ -1,5 +1,6 @@
 package loweh.endergolf;
 
+import loweh.endergolf.*;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.font.TextRenderer;
@@ -19,7 +20,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_TAB;
 @Environment(EnvType.CLIENT)
 public class ScorecardTextFieldWidget extends TextFieldWidget {
     private int lastInput = 0;
-    private final ScorecardScreen scoreScreen;
+    private ScorecardScreen scoreScreen;
 
     public ScorecardTextFieldWidget(TextRenderer txtRenderer, int x, int y, int width, int height, Text text, ScorecardScreen scoreScreen) {
         super(txtRenderer, x, y, width, height, text);
